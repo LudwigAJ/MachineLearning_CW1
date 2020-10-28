@@ -11,6 +11,9 @@ IMPLEMENTATION
     They will also have an an attribute called attribute which says which Wi-Fi hotspot we're comparing. i.e. the index [0. 6].
     Each node will also have a Room attribute. This is usually = None, but if it is not None, we have found a room. 
     Each node will also have its two children defined as left and right. Of which they can be Node or None.
+    When going through the tree at a later stage, I guess we just compare the value from its attribute at a given node 
+    and if (it is less than or greater than?) I cannot think of which currently, but I think if it is less than the value at the node
+    we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
 import numpy as np
 
@@ -60,9 +63,9 @@ class Tree:
 
             return Node(room=countLabels[0]), depth # and return it here
         else:
-            row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column retreived here.
-            training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column currently used.
-            tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and set its right values.
+            row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column it was retreived from.
+            training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column used to split.
+            tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and assign its right values.
 
             print("\033[1;33m")
             print("Split into its LEFT part")
