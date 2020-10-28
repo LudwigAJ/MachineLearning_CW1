@@ -49,23 +49,27 @@ class Tree:
         datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
-            print("HELLO !! :)")
+            print("LEAFNODEFOUND_START")
             print(training_dataset)
-            print("HELLO !! :)")
+            print("LEAFNODEFOUND_END")
             return Node(room=countLabels[0]), depth # and return it here
         else:
             row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column retreived here.
             training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column currently used.
             tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and set its right values.
-            print("lefft, ", training_dataset[:row, :])
-            print("right, ", training_dataset[row:, :])
+            print("LEFT_START")
+            print(training_dataset[:row, :])
+            print("LEFT_END")
+            print("RIGHT_START")
+            print(training_dataset[row:, :])
+            print("END_END")
             tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
             tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
             return tempNode, max(l_depth, r_depth) #return the tempNode up the chain.
     
     def find_split(self, training_dataset):
         
-        finalIGValue = float('-inf') # ref values for outer loop
+        finalIGValue = float('-inf') # ref values for outer loop. -inf just as a lower boundary.
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
         print("training set currently", training_dataset)
@@ -83,7 +87,6 @@ class Tree:
                 rightSubset = training_dataset[index:, :]
                 currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
                 if currentIG > maxIGValue: # If this is true, we have found a better split than before
-                    print("Going into split")
                     maxIGValue = currentIG
                     maxIGValueRow = index
 
@@ -91,12 +94,11 @@ class Tree:
                 finalIGValue = maxIGValue
                 finalIGValueRow = maxIGValueRow
                 finalIGValueColumn = i
-        print(finalIGValueRow, finalIGValueColumn)
         
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
 def main():
-    text = np.loadtxt("wifi_db/clean_dataset.txt")
+    text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     root = Node()
     depth = 0
     dTree = Tree(root=root)
