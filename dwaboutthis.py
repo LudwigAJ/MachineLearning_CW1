@@ -66,6 +66,8 @@ class Tree:
             row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column it was retreived from.
             training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column used to split.
             tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and assign its right values.
+            if not(self.root):
+                self.root = tempNode
 
             print("\033[1;33m")
             print("Split into its LEFT part")
@@ -87,7 +89,7 @@ class Tree:
         finalIGValueColumn = float('-inf')
 
         print("\033[1;35m")
-        print("training set currently finding split of")
+        print("Training set currently finding split of")
         print("\033[0m")
         print(training_dataset)
 
@@ -116,9 +118,8 @@ def main():
     text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     root = Node()
     depth = 0
-    dTree = Tree(root=root)
-    dTree.decision_tree_learning(text, depth)
-    
+    dTree = Tree()
+    root, depth = dTree.decision_tree_learning(text, depth)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
