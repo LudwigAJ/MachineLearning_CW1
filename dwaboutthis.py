@@ -49,20 +49,30 @@ class Tree:
         datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
+            
+            print("\033[1;32m")
             print("LEAFNODEFOUND_START")
+            print("\033[0m")
             print(training_dataset)
+            print("\033[1;32m")
             print("LEAFNODEFOUND_END")
+            print("\033[0m")
+
             return Node(room=countLabels[0]), depth # and return it here
         else:
             row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column retreived here.
             training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column currently used.
             tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and set its right values.
-            print("LEFT_START")
+
+            print("\033[1;33m")
+            print("Split into its LEFT part")
+            print("\033[0m")
             print(training_dataset[:row, :])
-            print("LEFT_END")
-            print("RIGHT_START")
+            print("\033[1;33m")
+            print("Split into its RIGHT part")
+            print("\033[0m")
             print(training_dataset[row:, :])
-            print("END_END")
+
             tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
             tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
             return tempNode, max(l_depth, r_depth) #return the tempNode up the chain.
@@ -72,12 +82,14 @@ class Tree:
         finalIGValue = float('-inf') # ref values for outer loop. -inf just as a lower boundary.
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
-        print("training set currently", training_dataset)
+
+        print("\033[1;35m")
+        print("training set currently finding split of")
+        print("\033[0m")
+        print(training_dataset)
+
         for i in range(0, training_dataset.shape[1]-1):
             training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
-            #print("find_split->datasetLabels: ", datasetLabels)
-            #flatColumn = training_dataset[:,i] # this is not really neccessary but I am tired :C so fix tmrw? we can just go through dataset elementwise by column.
-
             maxIGValue = float('-inf') # ref values for inner loop
             maxIGValueRow = float('-inf')
             
