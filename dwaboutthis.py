@@ -49,13 +49,18 @@ class Tree:
         datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
-            return Node(room=countLabels[0]) # and return it here
+            print("HELLO !! :)")
+            print(training_dataset)
+            print("HELLO !! :)")
+            return Node(room=countLabels[0]), depth # and return it here
         else:
             row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column retreived here.
             training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column currently used.
             tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and set its right values.
-            tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :-1], depth+1) # Recursion!
-            tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :-1], depth+1)
+            print("lefft, ", training_dataset[:row, :])
+            print("right, ", training_dataset[row:, :])
+            tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
+            tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
             return tempNode, max(l_depth, r_depth) #return the tempNode up the chain.
     
     def find_split(self, training_dataset):
@@ -63,19 +68,22 @@ class Tree:
         finalIGValue = float('-inf') # ref values for outer loop
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
-        for i in range(0, len(training_dataset[0,:])-1):
+        print("training set currently", training_dataset)
+        for i in range(0, training_dataset.shape[1]-1):
             training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
             #print("find_split->datasetLabels: ", datasetLabels)
-            flatColumn = training_dataset[:,i] # this is not really neccessary but I am tired :C so fix tmrw? we can just go through dataset elementwise by column.
+            #flatColumn = training_dataset[:,i] # this is not really neccessary but I am tired :C so fix tmrw? we can just go through dataset elementwise by column.
 
             maxIGValue = float('-inf') # ref values for inner loop
             maxIGValueRow = float('-inf')
             
-            for index, _ in enumerate(flatColumn):
-                leftSubset = training_dataset[:i, :-1] # split the dataset into left and right
-                rightSubset = training_dataset[i:, :-1]
+            for index in range(1, training_dataset.shape[0]):
+                
+                leftSubset = training_dataset[:index, :] # split the dataset into left and right
+                rightSubset = training_dataset[index:, :]
                 currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
                 if currentIG > maxIGValue: # If this is true, we have found a better split than before
+                    print("Going into split")
                     maxIGValue = currentIG
                     maxIGValueRow = index
 
@@ -83,13 +91,16 @@ class Tree:
                 finalIGValue = maxIGValue
                 finalIGValueRow = maxIGValueRow
                 finalIGValueColumn = i
-
+        print(finalIGValueRow, finalIGValueColumn)
+        
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
 def main():
     text = np.loadtxt("wifi_db/clean_dataset.txt")
-    v = Tree()
-    v.find_split(text)
+    root = Node()
+    depth = 0
+    dTree = Tree(root=root)
+    dTree.decision_tree_learning(text, depth)
     
 
 # At execution look for name __main__ and run it.
