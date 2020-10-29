@@ -95,15 +95,13 @@ class Tree:
 
         for i in range(0, training_dataset.shape[1]-1):
             training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
-            maxIGValue = float('-inf') # ref values for inner loop
-            maxIGValueRow = float('-inf')
             
             for index in range(1, training_dataset.shape[0]):
                 
                 leftSubset = training_dataset[:index, :] # split the dataset into left and right
                 rightSubset = training_dataset[index:, :]
                 currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
-                
+
                 if currentIG > finalIGValue: # If this is true, we have found a better split than before
                     finalIGValue = currentIG
                     finalIGValueRow = index
