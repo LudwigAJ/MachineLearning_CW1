@@ -48,18 +48,19 @@ class Tree:
     def __init__(self, root=None):
         self.root = root
 
+
     def decision_tree_learning(self, training_dataset, depth):
         datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
 
-            print("\033[1;32m")
-            print("LEAFNODEFOUND_START")
-            print("\033[0m")
-            print(training_dataset)
-            print("\033[1;32m")
-            print("LEAFNODEFOUND_END")
-            print("\033[0m")
+            # print("\033[1;32m")
+            # print("LEAFNODEFOUND_START")
+            # print("\033[0m")
+            # print(training_dataset)
+            # print("\033[1;32m")
+            # print("LEAFNODEFOUND_END")
+            # print("\033[0m")
 
             return Node(room=countLabels[0]), depth # and return it here
         else:
@@ -69,14 +70,14 @@ class Tree:
             if not(self.root):
                 self.root = tempNode
 
-            print("\033[1;33m")
-            print("Split into its LEFT part")
-            print("\033[0m")
-            print(training_dataset[:row, :])
-            print("\033[1;33m")
-            print("Split into its RIGHT part")
-            print("\033[0m")
-            print(training_dataset[row:, :])
+            # print("\033[1;33m")
+            # print("Split into its LEFT part")
+            # print("\033[0m")
+            # print(training_dataset[:row, :])
+            # print("\033[1;33m")
+            # print("Split into its RIGHT part")
+            # print("\033[0m")
+            # print(training_dataset[row:, :])
 
             tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
             tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
@@ -88,10 +89,10 @@ class Tree:
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
 
-        print("\033[1;35m")
-        print("Training set currently finding split of")
-        print("\033[0m")
-        print(training_dataset)
+        # print("\033[1;35m")
+        # print("Training set currently finding split of")
+        # print("\033[0m")
+        # print(training_dataset)
 
         for i in range(0, training_dataset.shape[1]-1):
             training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
@@ -124,33 +125,40 @@ def basicLoading(datasetPath, seed):
     return dataSet, trainingSet, testSet
 
 def crossValidationLoading(datasetPath, seed, k):
-	dataSet = np.loadtxt(datasetPath)
-	np.random.seed(seed)
-	np.random.shuffle(dataSet)
-	foldSize = len(dataSet)//k
+    bestTree = None
+    curAcc = float('-inf')
 
+    dataSet = np.loadtxt(datasetPath)
+    np.random.seed(seed)
+    np.random.shuffle(dataSet)
+    foldSize = len(dataSet)//k
 
-	for iteration in range(k):
-		testSet = dataSet[iteration*foldSize : (iteration+1)*foldSize]
-		print(testSet, len(testSet))
-		# for fold in range(k):
-		# 	if iteration != fold:
-	pass
+    dataSetIndices = np.arange(len(dataSet))
+    
+    for iteration in range(k):
+        testSetIndices = dataSetIndices[iteration*foldSize : (iteration+1)*foldSize]
+        testSet = dataSet[testSetIndices, :]
 
+        for fold in range(k):
+            if iteration != fold:
+                valSetIndices = dataSetIndices[fold*foldSize : (fold+1)*foldSize]
+                valSet = dataSet[valSetIndices, :]
+                trainingSetIndices = np.delete(dataSetIndices, np.hstack([testSetIndices, valSetIndices]))
+                trainingSet = dataSet[trainingSetIndices, :]
 
+                dTree = Tree()
+                root, depth = dTree.decision_tree_learning(trainingSet, 0)
+                print(root)
+                evalute(testSet, root)
 
-
-
-
-
-
-
+def evalute(testSet, trainedTree):
+    pass
 
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
-    dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-	crossValidationLoading("wifi_db/clean_dataset.txt", 69, 5)
+    # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
+    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 10)
 
     depth = 0
     dTree = Tree()
