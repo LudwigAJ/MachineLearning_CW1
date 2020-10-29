@@ -103,14 +103,11 @@ class Tree:
                 leftSubset = training_dataset[:index, :] # split the dataset into left and right
                 rightSubset = training_dataset[index:, :]
                 currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
-                if currentIG > maxIGValue: # If this is true, we have found a better split than before
-                    maxIGValue = currentIG
-                    maxIGValueRow = index
-
-            if maxIGValue > finalIGValue: # If this is true, this column gave a better split than the others before
-                finalIGValue = maxIGValue
-                finalIGValueRow = maxIGValueRow
-                finalIGValueColumn = i
+                
+                if currentIG > finalIGValue: # If this is true, we have found a better split than before
+                    finalIGValue = currentIG
+                    finalIGValueRow = index
+                    finalIGValueColumn = i
         
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
