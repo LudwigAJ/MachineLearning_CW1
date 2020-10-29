@@ -25,7 +25,7 @@ def getEntropy(dataset):
     return entropy
 
 def getRemainder(subsetLeft, subsetRight):
-    ssLeftSize, ssRightSize = len(subsetLeft), len(subsetRight) # get the amound of elements in the left subset
+    ssLeftSize, ssRightSize = len(subsetLeft), len(subsetRight) # get the amound of elements in the left and right subset
     ssAllSize = ssLeftSize + ssRightSize # get the sum of elements in both subsets
     leftValue = (ssLeftSize/ssAllSize) * getEntropy(subsetLeft) # : )
     rightValue = (ssRightSize/ssAllSize) * getEntropy(subsetRight) # : )
