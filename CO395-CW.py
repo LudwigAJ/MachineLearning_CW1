@@ -109,12 +109,35 @@ class Tree:
         
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
+def loadData(datasetPath, seed):
+    dataSet = np.loadtxt(datasetPath)
+    np.random.seed(seed)
+
+    #Get the different indices 
+    dataSetIndices = np.arange(len(dataSet))
+    trainingSetIndices = np.random.choice(len(dataSet), int(0.9*len(dataSet)), replace=False)
+    testSetIndices = np.delete(dataSetIndices, trainingSetIndices)
+    #Slice the numpy arrays
+    trainingSet = dataSet[trainingSetIndices, :]
+    testSet = dataSet[testSetIndices, :]
+
+    return dataSet, trainingSet, testSet
+
+def kFold(k, trainingSet):
+    accuracies = []
+
+   
+
+
+
 def main():
-    text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
-    root = Node()
+    #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
+    dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
+
+
     depth = 0
     dTree = Tree()
-    root, depth = dTree.decision_tree_learning(text, depth)
+    #root, depth = dTree.decision_tree_learning(text, depth)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
