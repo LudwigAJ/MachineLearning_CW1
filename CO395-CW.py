@@ -6,12 +6,12 @@ DESCRIPTION
     The right-most column states which room the person was in that instance.
 IMPLEMENTATION
     Given that we have 7-attributes to choose from, we need to sort through each one that will give us the best IG.
-    We will have two custom types. One Node and one Tree. A Tree will simply contain Nodes starting from a root. 
+    We will have two custom types. One Node and one Tree. A Tree will simply contain Nodes starting from a root.
     The nodes will have a value to compare against which is the Wi-Fi hotspot we're currently using for comparison [0, 6].
     They will also have an an attribute called attribute which says which Wi-Fi hotspot we're comparing. i.e. the index [0. 6].
-    Each node will also have a Room attribute. This is usually = None, but if it is not None, we have found a room. 
+    Each node will also have a Room attribute. This is usually = None, but if it is not None, we have found a room.
     Each node will also have its two children defined as left and right. Of which they can be Node or None.
-    When going through the tree at a later stage, I guess we just compare the value from its attribute at a given node 
+    When going through the tree at a later stage, I guess we just compare the value from its attribute at a given node
     and if (it is less than or greater than?) I cannot think of which currently, but I think if it is less than the value at the node
     we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
@@ -47,12 +47,12 @@ class Node:
 class Tree:
     def __init__(self, root=None):
         self.root = root
-    
+
     def decision_tree_learning(self, training_dataset, depth):
         datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
-            
+
             print("\033[1;32m")
             print("LEAFNODEFOUND_START")
             print("\033[0m")
@@ -81,9 +81,9 @@ class Tree:
             tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
             tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
             return tempNode, max(l_depth, r_depth) #return the tempNode up the chain.
-    
+
     def find_split(self, training_dataset):
-        
+
         finalIGValue = float('-inf') # ref values for outer loop. -inf just as a lower boundary.
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
@@ -95,9 +95,9 @@ class Tree:
 
         for i in range(0, training_dataset.shape[1]-1):
             training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
-            
+
             for index in range(1, training_dataset.shape[0]):
-                
+
                 leftSubset = training_dataset[:index, :] # split the dataset into left and right
                 rightSubset = training_dataset[index:, :]
                 currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
@@ -106,14 +106,14 @@ class Tree:
                     finalIGValue = currentIG
                     finalIGValueRow = index
                     finalIGValueColumn = i
-        
+
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
-def loadData(datasetPath, seed):
+def basicLoading(datasetPath, seed):
     dataSet = np.loadtxt(datasetPath)
     np.random.seed(seed)
 
-    #Get the different indices 
+    #Get the different indices
     dataSetIndices = np.arange(len(dataSet))
     trainingSetIndices = np.random.choice(len(dataSet), int(0.9*len(dataSet)), replace=False)
     testSetIndices = np.delete(dataSetIndices, trainingSetIndices)
@@ -123,17 +123,34 @@ def loadData(datasetPath, seed):
 
     return dataSet, trainingSet, testSet
 
-def kFold(k, trainingSet):
-    accuracies = []
+def crossValidationLoading(datasetPath, seed, k):
+	dataSet = np.loadtxt(datasetPath)
+	np.random.seed(seed)
+	np.random.shuffle(dataSet)
+	foldSize = len(dataSet)//k
 
-   
+
+	for iteration in range(k):
+		testSet = dataSet[iteration*foldSize : (iteration+1)*foldSize]
+		print(testSet, len(testSet))
+		# for fold in range(k):
+		# 	if iteration != fold:
+	pass
+
+
+
+
+
+
+
+
 
 
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-
+	crossValidationLoading("wifi_db/clean_dataset.txt", 69, 5)
 
     depth = 0
     dTree = Tree()
