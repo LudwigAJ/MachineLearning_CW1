@@ -124,7 +124,7 @@ def basicLoading(datasetPath, seed):
 
     return dataSet, trainingSet, testSet
 
-def crossValidationLoading(datasetPath, seed, k):
+def crossValidation(datasetPath, seed, k):
     bestTree = None
     curAcc = float('-inf')
 
@@ -153,25 +153,30 @@ def crossValidationLoading(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decision_tree_learning(trainingSet, 0)
-                acc = evaluate(valSet, root)
+                confusion = evaluate(valSet, root)
+                acc = accuracy(confusion)
                 print("Accuracy of current fold: ", acc, fold)
                 if (acc > maxValAcc):
                     maxValAcc = acc
                     maxValAccTree = root
-        testAcc = evaluate(testSet, maxValAccTree)
+        testConfusion = evaluate(testSet, maxValAccTree)
+        testAcc = accuracy(testConfusion) 
         print("Accuracy of current iteration: ", testAcc, iteration)
 
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
             maxTestAccTree = maxValAccTree
         print("Max accuracy so far: ", maxTestAcc)
+    
 
-
-    return maxTestAcc
-
+    return maxTestAcc, maxTestAccTree
 
 def evaluate(data, trainedTree):
     preds = []
+    labels = data[:,-1]
+    uniqueLabels = len(np.unique(labels))
+    confusion = np.zeros((uniqueLabels,uniqueLabels))
+
     for sample in data:
         node = trainedTree
         while (node.room is None):
@@ -182,19 +187,25 @@ def evaluate(data, trainedTree):
 
         preds.append(node.room)
 
-    labels = data[:,-1]
-    correct = 0
+    
     for i in range(len(labels)):
-        if labels[i] == preds[i]:
-            correct += 1
+        confusion[int(labels[i]-1), int(preds[i]-1)] += 1
 
-    return correct / len(labels)
+    print(confusion)
+    return confusion
 
+def accuracy(confusion):
+    correct = 0
+    for i in range(len(confusion)):
+        correct += confusion[i, i]
+    total = confusion.sum()
+
+    return correct / total
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 5)
+    crossValidation("wifi_db/clean_dataset.txt", 69, 5)
 
     depth = 0
     dTree = Tree()
