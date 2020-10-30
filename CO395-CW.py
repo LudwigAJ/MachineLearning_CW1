@@ -135,10 +135,15 @@ def crossValidationLoading(datasetPath, seed, k):
 
     dataSetIndices = np.arange(len(dataSet))
     
+    maxTestAcc = 0
+    maxTestAccTree = None
+
     for iteration in range(k):
         testSetIndices = dataSetIndices[iteration*foldSize : (iteration+1)*foldSize]
         testSet = dataSet[testSetIndices, :]
 
+        maxValAcc = 0
+        maxValAccTree = None
         for fold in range(k):
             if iteration != fold:
                 valSetIndices = dataSetIndices[fold*foldSize : (fold+1)*foldSize]
@@ -148,17 +153,42 @@ def crossValidationLoading(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decision_tree_learning(trainingSet, 0)
-                print(root)
-                evalute(testSet, root)
+                acc = evaluate(valSet, root)
+                if (acc > maxValAcc):
+                    maxValAcc = acc
+                    maxValAccTree = root
+        testAcc = evaluate(testSet, maxValAccTree)
+        if (testAcc > maxTestAcc):
+            maxTestAcc = testAcc
+            maxTestAccTree = maxValAccTree
+    return maxTestAcc
+        
 
-def evalute(testSet, trainedTree):
-    pass
+def evaluate(data, trainedTree):
+    preds = []
+    for sample in data:
+        node = trainedTree
+        while (node.room is None):
+            if sample[node.attribute] < node.value:
+                node = node.left
+            else:
+                node = node.right
+
+        preds.append(node.room)
+    
+    labels = data[:,-1]
+    correct = 0
+    for i in range(len(labels)):
+        if labels[i] == preds[i]:
+            correct += 1
+    
+    return correct / len(labels)
 
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 10)
+    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 3)
 
     depth = 0
     dTree = Tree()
