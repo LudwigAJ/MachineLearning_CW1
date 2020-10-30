@@ -137,6 +137,7 @@ def crossValidation(datasetPath, seed, k):
 
     maxTestAcc = 0
     maxTestAccTree = None
+    maxConfusion = None
 
     for iteration in range(k):
         testSetIndices = dataSetIndices[iteration*foldSize : (iteration+1)*foldSize]
@@ -166,10 +167,12 @@ def crossValidation(datasetPath, seed, k):
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
             maxTestAccTree = maxValAccTree
+            maxConfusion = testConfusion
         print("Max accuracy so far: ", maxTestAcc)
+
     
 
-    return maxTestAcc, maxTestAccTree
+    return maxConfusion, maxTestAccTree
 
 def evaluate(data, trainedTree):
     preds = []
@@ -202,13 +205,44 @@ def accuracy(confusion):
 
     return correct / total
 
+def precision(confusion):
+    output = []
+    for i in range(len(confusion)):
+        correct = confusion[i, i]
+        total = confusion[:, i].sum()
+        output.append(correct/total)
+
+    return output
+
+
+def recall(confusion):
+    output = []
+    for i in range(len(confusion)):
+        correct = confusion[i, i]
+        total = confusion[i, :].sum()
+        output.append(correct/total)
+
+    return output
+def f1(confusion):
+    precisionArr, recallArr = precision(confusion), recall(confusion)
+    precisionAvg, recallAvg = np.mean(precisionArr), np.mean(recallArr)
+    output = 2 * (precisionAvg*recallAvg) / (precisionAvg+recallAvg)
+
+    return output
+
+
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    crossValidation("wifi_db/clean_dataset.txt", 69, 5)
+    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 5)
 
-    depth = 0
-    dTree = Tree()
+    print(accuracy(confusion))
+    print(precision(confusion))
+    print(recall(confusion))
+    print(f1(confusion))
+
+    # depth = 0
+    # dTree = Tree()
     #root, depth = dTree.decision_tree_learning(text, depth)
 
 # At execution look for name __main__ and run it.
