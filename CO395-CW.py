@@ -134,7 +134,7 @@ def crossValidationLoading(datasetPath, seed, k):
     foldSize = len(dataSet)//k
 
     dataSetIndices = np.arange(len(dataSet))
-    
+
     maxTestAcc = 0
     maxTestAccTree = None
 
@@ -154,15 +154,21 @@ def crossValidationLoading(datasetPath, seed, k):
                 dTree = Tree()
                 root, depth = dTree.decision_tree_learning(trainingSet, 0)
                 acc = evaluate(valSet, root)
+                print("Accuracy of current fold: ", acc, fold)
                 if (acc > maxValAcc):
                     maxValAcc = acc
                     maxValAccTree = root
         testAcc = evaluate(testSet, maxValAccTree)
+        print("Accuracy of current iteration: ", testAcc, iteration)
+
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
             maxTestAccTree = maxValAccTree
+        print("Max accuracy so far: ", maxTestAcc)
+
+
     return maxTestAcc
-        
+
 
 def evaluate(data, trainedTree):
     preds = []
@@ -175,20 +181,20 @@ def evaluate(data, trainedTree):
                 node = node.right
 
         preds.append(node.room)
-    
+
     labels = data[:,-1]
     correct = 0
     for i in range(len(labels)):
         if labels[i] == preds[i]:
             correct += 1
-    
+
     return correct / len(labels)
 
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 3)
+    crossValidationLoading("wifi_db/clean_dataset.txt", 69, 5)
 
     depth = 0
     dTree = Tree()
