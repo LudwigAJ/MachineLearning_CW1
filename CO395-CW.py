@@ -49,41 +49,41 @@ class Tree:
         self.root = root
 
 
-    def decision_tree_learning(self, training_dataset, depth):
-        datasetLabels = training_dataset[:, -1] # split out so we get an 1-D array of all the labels
+    def decisionTreeLearning(self, trainingDataset, depth):
+        datasetLabels = trainingDataset[:, -1] # split out so we get an 1-D array of all the labels
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
 
             # print("\033[1;32m")
             # print("LEAFNODEFOUND_START")
             # print("\033[0m")
-            # print(training_dataset)
+            # print(trainingDataset)
             # print("\033[1;32m")
             # print("LEAFNODEFOUND_END")
             # print("\033[0m")
 
             return Node(room=countLabels[0]), depth # and return it here
         else:
-            row, column = self.find_split(training_dataset) # remember, we need to sort the training set on the column it was retreived from.
-            training_dataset = training_dataset[training_dataset[:,column].argsort()] # sort the tree (ascending) for the column used to split.
-            tempNode = Node(value=training_dataset[row, column], attribute=column) # Make a new node and assign its right values.
+            row, column = self.findSplit(trainingDataset) # remember, we need to sort the training set on the column it was retreived from.
+            trainingDataset = trainingDataset[trainingDataset[:,column].argsort()] # sort the tree (ascending) for the column used to split.
+            tempNode = Node(value=trainingDataset[row, column], attribute=column) # Make a new node and assign its right values.
             if not(self.root):
                 self.root = tempNode
 
             # print("\033[1;33m")
             # print("Split into its LEFT part")
             # print("\033[0m")
-            # print(training_dataset[:row, :])
+            # print(trainingDataset[:row, :])
             # print("\033[1;33m")
             # print("Split into its RIGHT part")
             # print("\033[0m")
-            # print(training_dataset[row:, :])
+            # print(trainingDataset[row:, :])
 
-            tempNode.left, l_depth = self.decision_tree_learning(training_dataset[:row, :], depth+1) # Recursion!
-            tempNode.right, r_depth = self.decision_tree_learning(training_dataset[row:, :], depth+1)
-            return tempNode, max(l_depth, r_depth) #return the tempNode up the chain.
+            tempNode.left, leftDepth = self.decisionTreeLearning(trainingDataset[:row, :], depth+1) # Recursion!
+            tempNode.right, rightDepth = self.decisionTreeLearning(trainingDataset[row:, :], depth+1)
+            return tempNode, max(leftDepth, rightDepth) #return the tempNode up the chain.
 
-    def find_split(self, training_dataset):
+    def findSplit(self, trainingDataset):
 
         finalIGValue = float('-inf') # ref values for outer loop. -inf just as a lower boundary.
         finalIGValueRow = float('-inf')
@@ -92,16 +92,16 @@ class Tree:
         # print("\033[1;35m")
         # print("Training set currently finding split of")
         # print("\033[0m")
-        # print(training_dataset)
+        # print(trainingDataset)
 
-        for i in range(0, training_dataset.shape[1]-1):
-            training_dataset = training_dataset[training_dataset[:,i].argsort()] # sort the dataset by current column (specified by i)
+        for i in range(0, trainingDataset.shape[1]-1):
+            trainingDataset = trainingDataset[trainingDataset[:,i].argsort()] # sort the dataset by current column (specified by i)
 
-            for index in range(1, training_dataset.shape[0]):
+            for index in range(1, trainingDataset.shape[0]):
 
-                leftSubset = training_dataset[:index, :] # split the dataset into left and right
-                rightSubset = training_dataset[index:, :]
-                currentIG = getInformationGain(training_dataset, leftSubset, rightSubset) # see the IG it produces
+                leftSubset = trainingDataset[:index, :] # split the dataset into left and right
+                rightSubset = trainingDataset[index:, :]
+                currentIG = getInformationGain(trainingDataset, leftSubset, rightSubset) # see the IG it produces
 
                 if currentIG > finalIGValue: # If this is true, we have found a better split than before
                     finalIGValue = currentIG
@@ -125,8 +125,6 @@ def basicLoading(datasetPath, seed):
     return dataSet, trainingSet, testSet
 
 def crossValidation(datasetPath, seed, k):
-    bestTree = None
-    curAcc = float('-inf')
 
     dataSet = np.loadtxt(datasetPath)
     np.random.seed(seed)
@@ -153,7 +151,7 @@ def crossValidation(datasetPath, seed, k):
                 trainingSet = dataSet[trainingSetIndices, :]
 
                 dTree = Tree()
-                root, depth = dTree.decision_tree_learning(trainingSet, 0)
+                root, depth = dTree.decisionTreeLearning(trainingSet, 0)
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
                 print("Accuracy of current fold: ", acc, fold)
@@ -215,6 +213,7 @@ def precision(confusion):
     return output
 
 
+
 def recall(confusion):
     output = []
     for i in range(len(confusion)):
@@ -223,6 +222,8 @@ def recall(confusion):
         output.append(correct/total)
 
     return output
+
+    
 def f1(confusion):
     precisionArr, recallArr = precision(confusion), recall(confusion)
     precisionAvg, recallAvg = np.mean(precisionArr), np.mean(recallArr)
@@ -243,7 +244,7 @@ def main():
 
     # depth = 0
     # dTree = Tree()
-    #root, depth = dTree.decision_tree_learning(text, depth)
+    #root, depth = dTree.decisionTreeLearning(text, depth)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
