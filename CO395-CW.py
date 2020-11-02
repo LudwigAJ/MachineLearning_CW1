@@ -16,8 +16,6 @@ IMPLEMENTATION
     we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
 import numpy as np
-import copy
-
 
 def getEntropy(dataset):
     datasetLabels = dataset[:, -1] # get only the labels to calculate pk.
@@ -29,8 +27,8 @@ def getEntropy(dataset):
 def getRemainder(subsetLeft, subsetRight):
     ssLeftSize, ssRightSize = len(subsetLeft), len(subsetRight) # get the amound of elements in the left and right subset
     ssAllSize = ssLeftSize + ssRightSize # get the sum of elements in both subsets
-    leftValue = (ssLeftSize/ssAllSize) * getEntropy(subsetLeft) # : )
-    rightValue = (ssRightSize/ssAllSize) * getEntropy(subsetRight) # : )
+    leftValue = (ssLeftSize/ssAllSize) * getEntropy(subsetLeft) 
+    rightValue = (ssRightSize/ssAllSize) * getEntropy(subsetRight) 
     remainder = leftValue + rightValue # calculate the remainder
     return remainder
 
@@ -170,7 +168,6 @@ class Tree:
                 postOrderTraversal(node.right)
 
                 # check left is leaf, right is leaf, this node is not leaf
-                
                 canPrune = node.left.room and node.right.room
                 if canPrune:
                     # compare validation error
@@ -182,28 +179,21 @@ class Tree:
                     old_room, old_size = node.room, node.size
                     # obtain majority of left and right
                     if node.left.size <= node.right.size:
-                        node.size = node.right.size 
+                        node.size = node.right.size
                         node.room = node.right.room # becomes leaf node
                     else:
-                        node.size = node.left.size 
+                        node.size = node.left.size
                         node.room = node.left.room
                     
                     prunedConfusion = evaluate(validationSet, self.root)
                     prunedAcc = accuracy(prunedConfusion) # this is the validation error
 
-                    print("Unpruned accuracy:", unprunedAcc)
-                    print("Pruned accuracy:", prunedAcc)
                     # reset node to previous copy
                     if unprunedAcc > prunedAcc:
-                        print("Not pruned")
                         node.room, node.size = old_room, old_size
                     else:
-                        print("Pruned")
                         node.right = node.left = None
         return postOrderTraversal()
-
-    
-
 
 def basicLoading(datasetPath, seed):
     dataSet = np.loadtxt(datasetPath)
@@ -247,26 +237,25 @@ def crossValidation(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
-                dTree.root.display()
-                # prune
+                # dTree.root.display()
                 dTree.pruneTree(valSet)
-                dTree.root.display()
+                # dTree.root.display()
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
 
-                print("Accuracy of current fold: ", acc, fold)
+                print("Accuracy of current fold (validation set): ", acc, fold)
                 if (acc > maxValAcc):
                     maxValAcc = acc
                     maxValAccTree = root
         testConfusion = evaluate(testSet, maxValAccTree)
         testAcc = accuracy(testConfusion) 
-        print("Accuracy of current iteration: ", testAcc, iteration)
+        print("Accuracy of current iteration (test set): ", testAcc, iteration)
 
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
             maxTestAccTree = maxValAccTree
             maxConfusion = testConfusion
-        print("Max accuracy so far: ", maxTestAcc)
+        print("Max accuracy so far (test set): ", maxTestAcc)
 
     
 
@@ -337,10 +326,6 @@ def main():
     print(precision(confusion))
     print(recall(confusion))
     print(f1(confusion))
-
-    # depth = 0
-    # dTree = Tree()
-    #root, depth = dTree.decisionTreeLearning(text, depth)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
