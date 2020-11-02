@@ -16,6 +16,8 @@ IMPLEMENTATION
     we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
 import numpy as np
+import copy
+
 
 def getEntropy(dataset):
     datasetLabels = dataset[:, -1] # get only the labels to calculate pk.
@@ -37,17 +39,67 @@ def getInformationGain(dataset, subsetLeft, subsetRight):
     return informationGain
 
 class Node:
-    def __init__(self, room=None, value=None, attribute=None, left=None, right=None):
+    def __init__(self, room=None, value=None, attribute=None, left=None, right=None, size=0):
         self.room = room
         self.value = value
         self.attribute = attribute
         self.left = left
         self.right = right
+        self.size = size
+        
+    def display(self):
+        lines, *_ = self._display_aux()
+        for line in lines:
+            print(line)
+
+    def _display_aux(self):
+        """Returns list of strings, width, height, and horizontal coordinate of the root."""
+        # No child.
+        if self.right is None and self.left is None:
+            line = '%s' % self.room
+            width = len(line)
+            height = 1
+            middle = width // 2
+            return [line], width, height, middle
+
+        # Only left child.
+        if self.right is None:
+            lines, n, p, x = self.left._display_aux()
+            s = '%s' % self.room
+            u = len(s)
+            first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s
+            second_line = x * ' ' + '/' + (n - x - 1 + u) * ' '
+            shifted_lines = [line + u * ' ' for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, n + u // 2
+
+        # Only right child.
+        if self.left is None:
+            lines, n, p, x = self.right._display_aux()
+            s = '%s' % self.room
+            u = len(s)
+            first_line = s + x * '_' + (n - x) * ' '
+            second_line = (u + x) * ' ' + '\\' + (n - x - 1) * ' '
+            shifted_lines = [u * ' ' + line for line in lines]
+            return [first_line, second_line] + shifted_lines, n + u, p + 2, u // 2
+
+        # Two children.
+        left, n, p, x = self.left._display_aux()
+        right, m, q, y = self.right._display_aux()
+        s = '%s' % self.room
+        u = len(s)
+        first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s + y * '_' + (m - y) * ' '
+        second_line = x * ' ' + '/' + (n - x - 1 + u + y) * ' ' + '\\' + (m - y - 1) * ' '
+        if p < q:
+            left += [n * ' '] * (q - p)
+        elif q < p:
+            right += [m * ' '] * (p - q)
+        zipped_lines = zip(left, right)
+        lines = [first_line, second_line] + [a + u * ' ' + b for a, b in zipped_lines]
+        return lines, n + m + u, max(p, q) + 2, n + u // 2
 
 class Tree:
     def __init__(self, root=None):
         self.root = root
-
 
     def decisionTreeLearning(self, trainingDataset, depth):
         datasetLabels = trainingDataset[:, -1] # split out so we get an 1-D array of all the labels
@@ -62,7 +114,7 @@ class Tree:
             # print("LEAFNODEFOUND_END")
             # print("\033[0m")
 
-            return Node(room=countLabels[0]), depth # and return it here
+            return Node(room=countLabels[0], size=len(countLabels)), depth # and return it here
         else:
             row, column = self.findSplit(trainingDataset) # remember, we need to sort the training set on the column it was retreived from.
             trainingDataset = trainingDataset[trainingDataset[:,column].argsort()] # sort the tree (ascending) for the column used to split.
@@ -110,6 +162,49 @@ class Tree:
 
         return finalIGValueRow, finalIGValueColumn # return the best split on the form of: row, column
 
+    def pruneTree(self, validationSet):
+        def postOrderTraversal(node=self.root):
+            if node:
+                if node.room: return
+                postOrderTraversal(node.left)
+                postOrderTraversal(node.right)
+
+                # check left is leaf, right is leaf, this node is not leaf
+                canPrune = node.left.room and node.right.room
+                if canPrune:
+                    print("Pruning node:", node.attribute, node.value)
+
+                    # save current node to use if we don't prune
+                    currentNode = copy.copy(node) 
+
+                    # compare validation error
+                    # evalute with current node first
+                    unprunedConfusion = evaluate(validationSet, self.root)
+                    unprunedAcc = accuracy(unprunedConfusion) # this is the validation error
+                    
+                    # prune
+                    # obtain majority of left and right
+                    if node.left.size <= node.right.size:
+                        node.size = node.right.size 
+                        node.room = node.right.room # becomes leaf node
+                    else:
+                        node.size = node.left.size 
+                        node.room = node.left.room
+                    
+                    prunedConfusion = evaluate(validationSet, self.root)
+                    prunedAcc = accuracy(prunedConfusion) # this is the validation error
+
+                    # reset node to previous copy
+                    if unprunedAcc > prunedAcc:
+                        print("Not pruned")
+                        node = currentNode
+                    else:
+                        print("Pruned")
+        return postOrderTraversal()
+
+    
+
+
 def basicLoading(datasetPath, seed):
     dataSet = np.loadtxt(datasetPath)
     np.random.seed(seed)
@@ -152,8 +247,13 @@ def crossValidation(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
+                dTree.root.display()
+                # prune
+                dTree.pruneTree(valSet)
+                dTree.root.display()
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
+
                 print("Accuracy of current fold: ", acc, fold)
                 if (acc > maxValAcc):
                     maxValAcc = acc
@@ -192,9 +292,9 @@ def evaluate(data, trainedTree):
     for i in range(len(labels)):
         confusion[int(labels[i]-1), int(preds[i]-1)] += 1
 
-    print(confusion)
     return confusion
 
+# Metrics
 def accuracy(confusion):
     correct = 0
     for i in range(len(confusion)):
@@ -212,8 +312,6 @@ def precision(confusion):
 
     return output
 
-
-
 def recall(confusion):
     output = []
     for i in range(len(confusion)):
@@ -223,14 +321,12 @@ def recall(confusion):
 
     return output
 
-    
 def f1(confusion):
     precisionArr, recallArr = precision(confusion), recall(confusion)
     precisionAvg, recallAvg = np.mean(precisionArr), np.mean(recallArr)
     output = 2 * (precisionAvg*recallAvg) / (precisionAvg+recallAvg)
 
     return output
-
 
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
