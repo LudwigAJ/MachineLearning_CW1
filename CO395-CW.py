@@ -170,19 +170,16 @@ class Tree:
                 postOrderTraversal(node.right)
 
                 # check left is leaf, right is leaf, this node is not leaf
+                
                 canPrune = node.left.room and node.right.room
                 if canPrune:
-                    print("Pruning node:", node.attribute, node.value)
-
-                    # save current node to use if we don't prune
-                    currentNode = copy.copy(node) 
-
                     # compare validation error
                     # evalute with current node first
                     unprunedConfusion = evaluate(validationSet, self.root)
                     unprunedAcc = accuracy(unprunedConfusion) # this is the validation error
                     
                     # prune
+                    old_room, old_size = node.room, node.size
                     # obtain majority of left and right
                     if node.left.size <= node.right.size:
                         node.size = node.right.size 
@@ -194,12 +191,15 @@ class Tree:
                     prunedConfusion = evaluate(validationSet, self.root)
                     prunedAcc = accuracy(prunedConfusion) # this is the validation error
 
+                    print("Unpruned accuracy:", unprunedAcc)
+                    print("Pruned accuracy:", prunedAcc)
                     # reset node to previous copy
                     if unprunedAcc > prunedAcc:
                         print("Not pruned")
-                        node = currentNode
+                        node.room, node.size = old_room, old_size
                     else:
                         print("Pruned")
+                        node.right = node.left = None
         return postOrderTraversal()
 
     
