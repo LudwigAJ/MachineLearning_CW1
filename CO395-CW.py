@@ -195,6 +195,12 @@ class Tree:
                         node.right = node.left = None
         return postOrderTraversal()
 
+    def getDepth(self):
+        def rec(node):
+            if node.room:
+                return 0
+            return 1 + max(rec(node.left), rec(node.right))
+        return rec(self.root)
 def basicLoading(datasetPath, seed):
     dataSet = np.loadtxt(datasetPath)
     np.random.seed(seed)
@@ -238,8 +244,12 @@ def crossValidation(datasetPath, seed, k):
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
                 # dTree.root.display()
+                print("Max depth before pruning:", depth)
                 dTree.pruneTree(valSet)
+                prunedDepth = dTree.getDepth()
+                print("Max depth after pruning:", prunedDepth)
                 # dTree.root.display()
+                
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
 
@@ -326,6 +336,7 @@ def main():
     print(precision(confusion))
     print(recall(confusion))
     print(f1(confusion))
+    tree.display()
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
