@@ -16,6 +16,8 @@ IMPLEMENTATION
     we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt 
 
 def getEntropy(dataset):
     datasetLabels = dataset[:, -1] # get only the labels to calculate pk.
@@ -327,16 +329,55 @@ def f1(confusion):
 
     return output
 
+def heatmap(confusion, cbar_kw={}, **kwargs):
+    fig, ax = plt.subplots()
+    im = ax.imshow(confusion, **kwargs)
+
+
+
+    # We want to show all ticks...
+    ax.set_xticks([0, 1, 2, 3])
+    ax.set_yticks([0, 1, 2, 3])
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(['Room 1', 'Room 2', 'Room 3', 'Room 4' ])
+    ax.set_yticklabels(['Room 1', 'Room 2', 'Room 3', 'Room 4' ])
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
+
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(4):
+        for j in range(4):
+            text = ax.text(j, i, confusion[i, j],
+                        ha="center", va="center", color="black")
+
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel("counts", rotation=-90, va="bottom")
+
+    ax.set_title("Clean Dataset Confusion Matrix")
+    fig.tight_layout()
+    plt.xlabel('True Label')
+    plt.ylabel('Predicted Label')
+    plt.show()
+
+
+
+
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 5)
+    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 10)
 
-    print(accuracy(confusion))
-    print(precision(confusion))
-    print(recall(confusion))
-    print(f1(confusion))
-    tree.display()
+    # confusion = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
+
+    heatmap(confusion, cmap="Blues")
+    # print(accuracy(confusion))
+    # print(precision(confusion))
+    # print(recall(confusion))
+    # print(f1(confusion))
+    # tree.display()
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
