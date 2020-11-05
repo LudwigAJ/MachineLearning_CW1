@@ -56,7 +56,10 @@ class Node:
         """Returns list of strings, width, height, and horizontal coordinate of the root."""
         # No child.
         if self.right is None and self.left is None:
-            line = '%s' % self.room
+            if self.room:
+                line = '%s' % self.room
+            else:
+                line = '%s:%s' % (self.attribute, self.value)
             width = len(line)
             height = 1
             middle = width // 2
@@ -65,7 +68,10 @@ class Node:
         # Only left child.
         if self.right is None:
             lines, n, p, x = self.left._display_aux()
-            s = '%s' % self.room
+            if self.room:
+                s = '%s' % self.room
+            else:
+                s = '%s:%s' % (self.attribute, self.value)
             u = len(s)
             first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s
             second_line = x * ' ' + '/' + (n - x - 1 + u) * ' '
@@ -75,7 +81,10 @@ class Node:
         # Only right child.
         if self.left is None:
             lines, n, p, x = self.right._display_aux()
-            s = '%s' % self.room
+            if self.room:
+                s = '%s' % self.room
+            else:
+                s = '%s:%s' % (self.attribute, self.value)
             u = len(s)
             first_line = s + x * '_' + (n - x) * ' '
             second_line = (u + x) * ' ' + '\\' + (n - x - 1) * ' '
@@ -85,7 +94,10 @@ class Node:
         # Two children.
         left, n, p, x = self.left._display_aux()
         right, m, q, y = self.right._display_aux()
-        s = '%s' % self.room
+        if self.room:
+            s = '%s' % self.room
+        else:
+            s = '%s:%s' % (self.attribute, self.value)
         u = len(s)
         first_line = (x + 1) * ' ' + (n - x - 1) * '_' + s + y * '_' + (m - y) * ' '
         second_line = x * ' ' + '/' + (n - x - 1 + u + y) * ' ' + '\\' + (m - y - 1) * ' '
@@ -245,12 +257,12 @@ def crossValidation(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
-                # dTree.root.display()
+                dTree.root.display()
                 print("Max depth before pruning:", depth)
                 dTree.pruneTree(valSet)
                 prunedDepth = dTree.getDepth()
                 print("Max depth after pruning:", prunedDepth)
-                # dTree.root.display()
+                dTree.root.display()
                 
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
@@ -368,7 +380,7 @@ def heatmap(confusion, cbar_kw={}, **kwargs):
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 10)
+    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69420, 10)
 
     # confusion = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
 
