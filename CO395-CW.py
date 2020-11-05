@@ -16,8 +16,8 @@ IMPLEMENTATION
     we go left node and if not we go right. Or maybe it was vice versa lmao.
 """
 import numpy as np
-import copy
-
+import matplotlib
+import matplotlib.pyplot as plt 
 
 def getEntropy(dataset):
     datasetLabels = dataset[:, -1] # get only the labels to calculate pk.
@@ -29,8 +29,8 @@ def getEntropy(dataset):
 def getRemainder(subsetLeft, subsetRight):
     ssLeftSize, ssRightSize = len(subsetLeft), len(subsetRight) # get the amound of elements in the left and right subset
     ssAllSize = ssLeftSize + ssRightSize # get the sum of elements in both subsets
-    leftValue = (ssLeftSize/ssAllSize) * getEntropy(subsetLeft) # : )
-    rightValue = (ssRightSize/ssAllSize) * getEntropy(subsetRight) # : )
+    leftValue = (ssLeftSize/ssAllSize) * getEntropy(subsetLeft) 
+    rightValue = (ssRightSize/ssAllSize) * getEntropy(subsetRight) 
     remainder = leftValue + rightValue # calculate the remainder
     return remainder
 
@@ -170,7 +170,6 @@ class Tree:
                 postOrderTraversal(node.right)
 
                 # check left is leaf, right is leaf, this node is not leaf
-                
                 canPrune = node.left.room and node.right.room
                 if canPrune:
                     # compare validation error
@@ -182,29 +181,28 @@ class Tree:
                     old_room, old_size = node.room, node.size
                     # obtain majority of left and right
                     if node.left.size <= node.right.size:
-                        node.size = node.right.size 
+                        node.size = node.right.size
                         node.room = node.right.room # becomes leaf node
                     else:
-                        node.size = node.left.size 
+                        node.size = node.left.size
                         node.room = node.left.room
                     
                     prunedConfusion = evaluate(validationSet, self.root)
                     prunedAcc = accuracy(prunedConfusion) # this is the validation error
 
-                    print("Unpruned accuracy:", unprunedAcc)
-                    print("Pruned accuracy:", prunedAcc)
                     # reset node to previous copy
                     if unprunedAcc > prunedAcc:
-                        print("Not pruned")
                         node.room, node.size = old_room, old_size
                     else:
-                        print("Pruned")
                         node.right = node.left = None
         return postOrderTraversal()
 
-    
-
-
+    def getDepth(self):
+        def rec(node):
+            if node.room:
+                return 0
+            return 1 + max(rec(node.left), rec(node.right))
+        return rec(self.root)
 def basicLoading(datasetPath, seed):
     dataSet = np.loadtxt(datasetPath)
     np.random.seed(seed)
@@ -247,26 +245,29 @@ def crossValidation(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
-                dTree.root.display()
-                # prune
+                # dTree.root.display()
+                print("Max depth before pruning:", depth)
                 dTree.pruneTree(valSet)
-                dTree.root.display()
+                prunedDepth = dTree.getDepth()
+                print("Max depth after pruning:", prunedDepth)
+                # dTree.root.display()
+                
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
 
-                print("Accuracy of current fold: ", acc, fold)
+                print("Accuracy of current fold (validation set): ", acc, fold)
                 if (acc > maxValAcc):
                     maxValAcc = acc
                     maxValAccTree = root
         testConfusion = evaluate(testSet, maxValAccTree)
         testAcc = accuracy(testConfusion) 
-        print("Accuracy of current iteration: ", testAcc, iteration)
+        print("Accuracy of current iteration (test set): ", testAcc, iteration)
 
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
             maxTestAccTree = maxValAccTree
             maxConfusion = testConfusion
-        print("Max accuracy so far: ", maxTestAcc)
+        print("Max accuracy so far (test set): ", maxTestAcc)
 
     
 
@@ -328,19 +329,55 @@ def f1(confusion):
 
     return output
 
+def heatmap(confusion, cbar_kw={}, **kwargs):
+    fig, ax = plt.subplots()
+    im = ax.imshow(confusion, **kwargs)
+
+
+
+    # We want to show all ticks...
+    ax.set_xticks([0, 1, 2, 3])
+    ax.set_yticks([0, 1, 2, 3])
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(['Room 1', 'Room 2', 'Room 3', 'Room 4' ])
+    ax.set_yticklabels(['Room 1', 'Room 2', 'Room 3', 'Room 4' ])
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
+
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(4):
+        for j in range(4):
+            text = ax.text(j, i, confusion[i, j],
+                        ha="center", va="center", color="black")
+
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel("counts", rotation=-90, va="bottom")
+
+    ax.set_title("Clean Dataset Confusion Matrix")
+    fig.tight_layout()
+    plt.xlabel('True Label')
+    plt.ylabel('Predicted Label')
+    plt.show()
+
+
+
+
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 5)
+    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 10)
 
-    print(accuracy(confusion))
-    print(precision(confusion))
-    print(recall(confusion))
-    print(f1(confusion))
+    # confusion = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
 
-    # depth = 0
-    # dTree = Tree()
-    #root, depth = dTree.decisionTreeLearning(text, depth)
+    heatmap(confusion, cmap="Blues")
+    # print(accuracy(confusion))
+    # print(precision(confusion))
+    # print(recall(confusion))
+    # print(f1(confusion))
+    # tree.display()
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
