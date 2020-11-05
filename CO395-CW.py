@@ -380,7 +380,7 @@ def heatmap(confusion, cbar_kw={}, **kwargs):
 def main():
     #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
     # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69420, 10)
+    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 10)
 
     # confusion = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
 
