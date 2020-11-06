@@ -9,7 +9,10 @@ Inside the CO395-CW.py there is a function named main. Inside this function we c
 The first one specifies the path to the training dataset, the 2nd parameter specifies the number of folds, and the last parameter takes in a boolean specifying if we should print the tree while its created or not. 
 We did not include any command-line arguments.
 
+Edit the CO395-CW.py file to specify dataset, number of folds, and True to show tree or False to hide.
+
 Run the program by writing:
   python3 /pathToPythonFile
+  
 
 Part of coursework for COMP97101(CO395) Machine Learning at Imperial College London
