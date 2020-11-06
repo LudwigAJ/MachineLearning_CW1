@@ -373,7 +373,7 @@ def runTest(dataPath, foldNumber, showTree = False):
 
 
 def main():
-    runTest("wifi_db\clean_dataset.txt", 3, showTree = True)
+    runTest("wifi_db\clean_dataset.txt", foldNumber = 10, showTree = True)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
