@@ -18,6 +18,8 @@ IMPLEMENTATION
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt 
+import random
+import time
 
 def getEntropy(dataset):
     datasetLabels = dataset[:, -1] # get only the labels to calculate pk.
@@ -118,14 +120,6 @@ class Tree:
         countLabels = np.unique(datasetLabels) # count the number of unique labels and their occurances
         if len(countLabels) == 1: # if the length is == 1 we make a new tree node
 
-            # print("\033[1;32m")
-            # print("LEAFNODEFOUND_START")
-            # print("\033[0m")
-            # print(trainingDataset)
-            # print("\033[1;32m")
-            # print("LEAFNODEFOUND_END")
-            # print("\033[0m")
-
             return Node(room=countLabels[0], size=len(countLabels)), depth # and return it here
         else:
             row, column = self.findSplit(trainingDataset) # remember, we need to sort the training set on the column it was retreived from.
@@ -133,15 +127,6 @@ class Tree:
             tempNode = Node(value=trainingDataset[row, column], attribute=column) # Make a new node and assign its right values.
             if not(self.root):
                 self.root = tempNode
-
-            # print("\033[1;33m")
-            # print("Split into its LEFT part")
-            # print("\033[0m")
-            # print(trainingDataset[:row, :])
-            # print("\033[1;33m")
-            # print("Split into its RIGHT part")
-            # print("\033[0m")
-            # print(trainingDataset[row:, :])
 
             tempNode.left, leftDepth = self.decisionTreeLearning(trainingDataset[:row, :], depth+1) # Recursion!
             tempNode.right, rightDepth = self.decisionTreeLearning(trainingDataset[row:, :], depth+1)
@@ -153,10 +138,6 @@ class Tree:
         finalIGValueRow = float('-inf')
         finalIGValueColumn = float('-inf')
 
-        # print("\033[1;35m")
-        # print("Training set currently finding split of")
-        # print("\033[0m")
-        # print(trainingDataset)
 
         for i in range(0, trainingDataset.shape[1]-1):
             trainingDataset = trainingDataset[trainingDataset[:,i].argsort()] # sort the dataset by current column (specified by i)
@@ -257,23 +238,23 @@ def crossValidation(datasetPath, seed, k):
 
                 dTree = Tree()
                 root, depth = dTree.decisionTreeLearning(trainingSet, 0)
-                dTree.root.display()
-                print("Max depth before pruning:", depth)
+                # dTree.root.display()
+                # print("Max depth before pruning:", depth)
                 dTree.pruneTree(valSet)
-                prunedDepth = dTree.getDepth()
-                print("Max depth after pruning:", prunedDepth)
-                dTree.root.display()
+                # prunedDepth = dTree.getDepth()
+                # print("Max depth after pruning:", prunedDepth)
+                # dTree.root.display()
                 
                 confusion = evaluate(valSet, root)
                 acc = accuracy(confusion)
 
-                print("Accuracy of current fold (validation set): ", acc, fold)
+                print("Accuracy of fold", fold,  "(validation set): ", acc )
                 if (acc > maxValAcc):
                     maxValAcc = acc
                     maxValAccTree = root
         testConfusion = evaluate(testSet, maxValAccTree)
         testAcc = accuracy(testConfusion) 
-        print("Accuracy of current iteration (test set): ", testAcc, iteration)
+        print("Accuracy of iteration", iteration,  "(test set): ", acc )
 
         if (testAcc > maxTestAcc):
             maxTestAcc = testAcc
@@ -314,14 +295,15 @@ def accuracy(confusion):
         correct += confusion[i, i]
     total = confusion.sum()
 
-    return correct / total
+    output = correct / total
+    return round(output, 5)
 
 def precision(confusion):
     output = []
     for i in range(len(confusion)):
         correct = confusion[i, i]
         total = confusion[:, i].sum()
-        output.append(correct/total)
+        output.append(round(correct/total, 5))
 
     return output
 
@@ -330,16 +312,16 @@ def recall(confusion):
     for i in range(len(confusion)):
         correct = confusion[i, i]
         total = confusion[i, :].sum()
-        output.append(correct/total)
+        output.append(round(correct/total, 5))
 
     return output
-
+    
 def f1(confusion):
     precisionArr, recallArr = precision(confusion), recall(confusion)
     precisionAvg, recallAvg = np.mean(precisionArr), np.mean(recallArr)
     output = 2 * (precisionAvg*recallAvg) / (precisionAvg+recallAvg)
 
-    return output
+    return round(output, 5)
 
 def heatmap(confusion, cbar_kw={}, **kwargs):
     fig, ax = plt.subplots()
@@ -368,28 +350,30 @@ def heatmap(confusion, cbar_kw={}, **kwargs):
     cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
     cbar.ax.set_ylabel("counts", rotation=-90, va="bottom")
 
-    ax.set_title("Clean Dataset Confusion Matrix")
+    ax.set_title("Confusion Matrix")
     fig.tight_layout()
     plt.xlabel('True Label')
     plt.ylabel('Predicted Label')
     plt.show()
 
+def runTest(dataPath, foldNumber, showTree = False):
 
+    seed = random.seed(time.time()) ##seeding the time 
+
+    confusion, tree = crossValidation(dataPath, seed, foldNumber)
+
+    heatmap(confusion, cmap="Blues")
+    print("Classification Rate (Accuracy): ", accuracy(confusion))
+    print("Precision:", precision(confusion))
+    print("Recall: ", recall(confusion))
+    print("Average F1-score:", f1(confusion))
+    if(showTree): tree.display()
+
+    return
 
 
 def main():
-    #text = np.loadtxt("wifi_db/clean_dataset.txt") # set everything up and run.
-    # dataSet, trainingSet, testSet = loadData("wifi_db/clean_dataset.txt", 42069)
-    confusion, tree = crossValidation("wifi_db/clean_dataset.txt", 69, 10)
-
-    # confusion = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]])
-
-    heatmap(confusion, cmap="Blues")
-    # print(accuracy(confusion))
-    # print(precision(confusion))
-    # print(recall(confusion))
-    # print(f1(confusion))
-    # tree.display()
+    runTest("wifi_db\clean_dataset.txt", 3, showTree = True)
 
 # At execution look for name __main__ and run it.
 if __name__ == "__main__":
