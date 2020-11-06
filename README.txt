@@ -10,9 +10,10 @@ The first one specifies the path to the training dataset, the 2nd parameter spec
 We did not include any command-line arguments.
 
 Edit the CO395-CW.py file to specify dataset, number of folds, and True to show tree or False to hide.
+Pruning of trees is on by default. Although, a modification of our file could disable it.
 
-Run the program by writing:
-  python3 /pathToPythonFile
+Run the program by running the following command in the root directory of this repository:
+  python3 CO395-CW.py
   
 
 Part of coursework for COMP97101(CO395) Machine Learning at Imperial College London
