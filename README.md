@@ -6,3 +6,4 @@ A program that takes in a .txt file containing Wi-Fi strengths from different ro
 Run the program by writing:
   python3 /pathToPythonFile
 
+Part of coursework for COMP97101(CO395) Machine Learning at Imperial College London
