@@ -1,17 +1,8 @@
 # MachineLearning_CW1
 
+A program that takes in a .txt file containing Wi-Fi strengths from different routers recorded by an agent in a room.
+.txt file must contain data formated as the Wi-Fi strength given in each column corresponding to their router, with the room being labeled in the last column.
 
-## Things to do ##
-# Part 1
-## 1. Make the python code. Make sure to document with pics.
-## 2. Evaluate the code and write it down
-## 3. Prune the code and redo it again. Docuement!
-## 4. Write report for new code.
+Run the program by writing:
+  python3 /pathToPythonFile
 
-# Part 2
-## 1. Answer all the questions for the report
-## 2. Everyone look through everything I need a first in this pls.
-
-# **How to split?**
-### Well, Maybe I could start by going through some of the stuff tonight and getting a .py file started?
-### Let's not overcomplicate and keep each variant into its own .py file no? Easier to docuement :)
